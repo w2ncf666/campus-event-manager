@@ -1,0 +1,31 @@
+# Secrets / local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*token*.txt
+*secret*.txt
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+.idea/
+
+# Runtime / artifacts
+__pycache__/
+*.pyc
+node_modules/
+dist/
+build/
+coverage/
+.pytest_cache/
+.venv/
+venv/
+
+# Per-machine environment report (do not share machine-specific output)
+docs/environment-report.local.md
+
+# Project BMAD files and documented outputs are NOT ignored by default.
+# Before committing them, review for credentials and personal data.
