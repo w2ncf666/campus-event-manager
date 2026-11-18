@@ -1,37 +1,43 @@
-# Windows local environment check. No installation, no network calls, no credentials read.
+﻿# Windows local environment check. No installation, no network calls, no credentials read.
 $ErrorActionPreference = 'Continue'
 $root = Resolve-Path (Join-Path $PSScriptRoot '..')
 $out = Join-Path $root 'docs/environment-report.local.md'
-$items = @(
-    @{Name='git'; Args=@('--version')},
-    @{Name='node'; Args=@('--version')},
-    @{Name='npm'; Args=@('--version')},
-    @{Name='npx'; Args=@('--version')},
-    @{Name='python'; Args=@('--version')},
-    @{Name='uv'; Args=@('--version')},
-    @{Name='codex'; Args=@('--version')}
-)
+$commands = [ordered]@{
+    git = 'git.exe'
+    node = 'node.exe'
+    npm = 'npm.cmd'
+    npx = 'npx.cmd'
+    python = 'python.exe'
+    uv = 'uv.exe'
+    codex = 'codex.exe'
+}
 $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add('# 本机环境检查（仅本地，勿直接提交）')
 $lines.Add('')
 $lines.Add('检查日期：' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'))
 $lines.Add('')
-$lines.Add('| 工具 | 是否可找到 | 版本输出（第一行） |')
+$lines.Add('| 工具 | 状态 | 版本输出（第一行） |')
 $lines.Add('| --- | --- | --- |')
-foreach ($item in $items) {
-    $cmd = Get-Command $item.Name -ErrorAction SilentlyContinue
+foreach ($item in $commands.GetEnumerator()) {
+    $name = $item.Key
+    $cmd = Get-Command $item.Value -ErrorAction SilentlyContinue
     if ($null -eq $cmd) {
-        $lines.Add('| ' + $item.Name + ' | 未找到 | - |')
-    } else {
-        try {
-            $result = @(& $($item.Name) --version 2>&1)
-            $first = ($result | Select-Object -First 1 | Out-String).Trim()
-            if (-not $first) { $first = '已找到（无版本输出）' }
-            $first = $first.Replace('|','/')
-            $lines.Add('| ' + $item.Name + ' | 已找到 | ' + $first + ' |')
-        } catch {
-            $lines.Add('| ' + $item.Name + ' | 已找到 | 无法读取版本：' + $_.Exception.Message.Replace('|','/') + ' |')
+        $lines.Add("| $name | 未找到 | - |")
+        continue
+    }
+
+    try {
+        $result = @(& $cmd.Source --version 2>$null)
+        if ($LASTEXITCODE -ne 0) {
+            $lines.Add("| $name | 执行失败 | 退出码 $LASTEXITCODE |")
+            continue
         }
+        $first = ($result | Select-Object -First 1 | Out-String).Trim().Replace('|','/')
+        if (-not $first) { $first = '无版本输出' }
+        $lines.Add("| $name | 可用 | $first |")
+    } catch {
+        $message = ($_.Exception.Message -split '\r?\n')[0].Replace('|','/')
+        $lines.Add("| $name | 执行失败 | $message |")
     }
 }
 $installed = Test-Path (Join-Path $root '_bmad')

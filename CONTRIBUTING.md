@@ -11,13 +11,13 @@
 ## 新成员首次操作
 
 ```bash
-git clone https://github.com/OWNER/campus-event-manager.git
+git clone https://github.com/w2ncf666/campus-event-manager.git
 cd campus-event-manager
 git switch -c docs/your-name-setup
 # 编辑你的文档，确认变更后：
-git add .
+git add docs/team-environment.md
 git commit -m "docs: add my setup notes"
 git push -u origin docs/your-name-setup
 ```
 
-随后到 GitHub 仓库页面发起 Pull Request；`OWNER` 是占位符，请替换为真正的仓库所有者用户名。
+随后到 GitHub 仓库页面发起 Pull Request。

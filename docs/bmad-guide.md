@@ -1,48 +1,30 @@
-# BMAD v6.12.x 协作说明
+# BMAD 6.12.4 安装与验证
 
-## 目标
+项目准备阶段采用原模板列出的 **BMAD 6.12.4**，本机以 **Codex + BMad Method（BMM，包含 Core）**验证。如课程要求指定版本，三人按课程要求统一。安装器需要 Node.js 20.12 或更新版本。BMAD 的帮助和部分其他工作流通过 `uv` 运行 Python 脚本。
 
-- 课程作业以 BMAD 流程推进，先调研、再文档、后编码。
-- 组员尽量统一 BMAD 主版本及同一项目的输出目录约定。
-- 每位同学使用自己的 AI 编程工具环境，但提交内容统一放在小组 GitHub 仓库。
+## 在仓库根目录安装
 
-## 安装/验证
-
-在**本项目根目录**打开终端：
+Windows PowerShell：
 
 ```powershell
-node -v
-npm -v
-npx bmad-method@6.12.4 install
+node --version
+npm.cmd --version
+uv --version
+npx.cmd --yes bmad-method@6.12.4 install --yes --modules bmm --tools codex --user-name campus-event-team --communication-language "Simplified Chinese" --document-output-language "Simplified Chinese" --output-folder _bmad-output
 ```
 
-安装器可能询问目标 IDE、语言、配置等。完成后打开对应 AI 编程工具，尝试调用：
+在 macOS 或 Linux 上，使用 `npm` 和 `npx`。如使用其他 AI 工具，可运行交互式安装 `npx bmad-method@6.12.4 install`，选择 BMad Method 和实际使用的工具，将交流与文档语言设为简体中文，输出目录设为 `_bmad-output`。Windows PowerShell 使用 `npx.cmd`。
 
-```text
-bmad-help
-```
+[BMAD v6.12 官方安装说明](https://github.com/bmad-code-org/BMAD-METHOD/blob/V6.12/docs/start/install-bmad.md) · [uv 官方安装说明](https://docs.astral.sh/uv/getting-started/installation/)
 
-注意：`bmad-help` 是在支持 BMAD 的 AI 编程工具内调用的工作流/命令，**不是普通 PowerShell 可执行程序**。
+## 打开项目并调用帮助
 
-在 `docs/team-environment.md` 记录：实际工具、BMAD 版本、安装目录、是否能运行帮助命令。
+1. 在 Codex 里打开克隆的 `campus-event-manager` 文件夹。
+2. 在新对话输入 `$bmad-help`，询问当前可以使用哪些规划工作流。
+3. 将实际工具、版本和结果填到[三人环境登记表](team-environment.md)。
 
-## 课程工作流（等材料齐全后再执行）
+BMAD 为 Codex 生成 `_bmad/` 和 `.agents/skills/bmad-*/`，每位组员可以按本页命令在本机重建。需要共同维护的规划文档可提交到 `_bmad-output/planning-artifacts/`。 [Codex 技能说明](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)
 
-1. `bmad-create-product-brief`：明确项目目标和范围。
-2. `bmad-prd`：整理可验收的需求。
-3. `bmad-architecture`：记录技术架构与关键决策。
-4. `bmad-create-epics-and-stories`：拆分开发任务。
-5. `bmad-sprint-planning`：确定迭代计划。
-6. `bmad-build` + `bmad-code-review`：开发和评审。
-7. `bmad-retrospective`：复盘过程。
+## 和课程流程衔接
 
-各工作流的**实际命令、前置条件和可用性**以本机安装的 `bmad-help` 返回为准。
-
-## 团队维护约定
-
-- 不在 AI 生成内容里填写假访谈、假验收或假运行记录。
-- 由仓库负责人确认是否将 `_bmad/` 配置和 `_bmad-output/` 规划产物加入 Git，避免遗漏作业证据；但提交前检查是否有个人隐私、密钥或缓存文件。
-- 如果某位成员尚未安装成功，先记录失败原因，不要把其他人的安装成功视作全员通过。
-- BMAD v7 有变化，本课程暂按 v6.12.x 组织，以免组内流程混用。
-
-官方资料：https://github.com/bmad-code-org/BMAD-METHOD
+收到访谈记录和课程要求后，依次使用 `bmad-product-brief`、`bmad-prd`、`bmad-architecture`、`bmad-create-epics-and-stories` 和 `bmad-sprint-planning`。开发和评审使用 `bmad-build` 与 `bmad-code-review`。本项目安装的 `bmad-help` 可查询各工作流的用途和前置步骤。

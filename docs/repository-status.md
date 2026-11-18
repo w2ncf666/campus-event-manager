@@ -1,29 +1,18 @@
-# 第二项任务交付清单（真实状态记录）
+# 仓库与环境准备进度
 
-**日期：** 2026-11-18  
-**负责人：** 待填写  
-**状态说明：** 本模板文件已生成；云端仓库、成员邀请、环境检查均未由模板自动完成。
+更新于 2026-11-18。负责人为 GitHub 仓库所有者 `w2ncf666`。
 
-| 交付事项 | 当前状态 | 证据/链接 | 备注 |
-| --- | --- | --- | --- |
-| 创建独立 GitHub 仓库 | 待操作 | 待填写 | 建议名 `campus-event-manager` |
-| 仓库初始文件上传 | 待操作 | 待填写 | README、docs、协作规范 |
-| 邀请组员 B | 待操作 | GitHub 用户名待填写 | 需要对方接受邀请 |
-| 邀请组员 C | 待操作 | GitHub 用户名待填写 | 需要对方接受邀请 |
-| 两人可访问/克隆验证 | 待操作 | 待填写 | 建议实际提交一次 PR |
-| 技术栈调查 | 待填写 | `docs/team-environment.md` | 三人都要填写 |
-| BMAD 版本和环境确认 | 待检查 | `docs/team-environment.md` | 每人运行 `bmad-help` |
-| 仓库链接发到小组 | 待操作 | 待填写 | 公开项目地址与后续步骤 |
+| 交付事项 | 当前状态 | 验证或后续事项 |
+| --- | --- | --- |
+| 独立课程仓库 | 已上线 | [campus-event-manager](https://github.com/w2ncf666/campus-event-manager)，公开仓库，默认分支 `main` |
+| 项目说明、协作与环境文档 | 已准备 | [项目主页](../README.md)、[上手指南](setup-guide.md)、[协作约定](../CONTRIBUTING.md) |
+| 组员 B 仓库邀请 | 已发出，待接受 | [访问设置](https://github.com/w2ncf666/campus-event-manager/settings/access) |
+| 组员 C 仓库邀请 | 待提供 GitHub 用户名 | [访问设置](https://github.com/w2ncf666/campus-event-manager/settings/access) |
+| 两位组员写权限验证 | 待组员接受后验证 | 克隆并从各自分支推送一次 |
+| 技术经验 | 待三人补充 | [三人环境登记表](team-environment.md) |
+| 本机 BMAD | 6.12.4 安装成功 | Windows PowerShell 和 Git Bash 自检通过，Codex 识别 29 个项目技能，帮助所需配置可读取 |
+| 其余组员 BMAD | 待组员自检 | 按 [BMAD 安装说明](bmad-guide.md)运行后填写登记表 |
 
-## 仓库信息
+## 可发到小组的消息
 
-- 仓库 URL：待创建后填写
-- 仓库可见性：暂定 Private（以实际设置为准）
-- 默认分支：计划使用 `main`（以实际为准）
-- 组员 B 用户名：待填写
-- 组员 C 用户名：待填写
-- BMAD 统一版本：建议 v6.12.4（以组内实际确定结果为准）
-
-## 可以发送给其他组员的汇报（填写后再发送）
-
-> 我负责第二项“项目仓库与环境准备”。已创建 GitHub 作业仓库：〔实际地址〕。请两位提供 GitHub 用户名并接受仓库邀请，完成后克隆仓库。然后请按 `docs/setup-guide.md` 检查环境，填写 `docs/team-environment.md`。项目先不开发功能，等真实需求调研和技术方案确定后，再一起走 BMAD 的 Product Brief → PRD 流程。
+> 我负责项目仓库与环境。我们的题目是“社团活动报名与候补系统”，仓库是 https://github.com/w2ncf666/campus-event-manager 。有邀请的同学请登录 GitHub 接受，尚未提供 GitHub 用户名的同学请把账号发给我。请按仓库里的上手指南克隆、自检，再在环境表填一下熟悉的语言、框架、数据库和 BMAD 运行情况。我们等访谈和课程要求明确后再定正式需求及技术方案。
