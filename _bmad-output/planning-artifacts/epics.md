@@ -6,7 +6,7 @@ source_architecture: "PR #4"
 
 # 社团活动报名与候补系统史诗与故事
 
-以 [PRD v0.2](PRD.md) 和[架构定稿](architecture.md)为基线。三类业务分工保持一致，候补邀请负责人先牵头公共迁移。组内架构评审及课堂 M1、M2 均已通过，按下列故事分批实施。补充 [AC-07 候补与现场交接](https://github.com/w2ncf666/campus-event-manager/pull/3) 正在 PR #3 评审。
+以 [PRD v0.2](PRD.md) 和[架构定稿](architecture.md)为基线。三类业务分工保持一致，候补邀请负责人先牵头公共迁移。组内架构评审及课堂 M1、M2 均已通过，按下列故事分批实施。按 [AC-07 候补与现场交接](PRD.md#4-功能验收) 联合验收。
 
 ## 可测非功能需求
 
