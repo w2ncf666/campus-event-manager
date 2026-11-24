@@ -204,6 +204,7 @@ class RosterEvent(models.Model):
         RELEASED = "released", "释放正式席位"
         STAGE_ABSENT = "stage_absent", "阶段缺席"
         ARRIVED = "arrived", "登记在场"
+        LEFT = "left", "登记离场"
         LATE_NOTE = "late_note", "确认晚到留言"
 
     participant = models.ForeignKey(
