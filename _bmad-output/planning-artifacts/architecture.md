@@ -7,7 +7,7 @@ updated: "2026-11-24"
 
 # 社团活动报名与候补系统架构
 
-以 [PRD v0.2](PRD.md) 为需求基线。采用完整方案设计，报名、候补、现场三块将并行开发，同一报名人和席位会跨模块更新。建议三位组员在这份文档上一起确认版本、数据结构和迁移负责人。
+以 [PRD v0.2](PRD.md) 为需求基线。采用完整方案设计，报名、候补、现场三块将并行开发，同一报名人和席位会跨模块更新。2026-11-24，仓库负责人确认用本方案开始编制故事与冲刺计划。三位组员在同一 PR 评审架构与交接，课程 M1、M2 的通过状态以课堂记录为准。
 
 ## 今天要定的三件事
 
@@ -15,7 +15,7 @@ updated: "2026-11-24"
 | --- | --- |
 | 开发版本 | CPython **3.14.10**、Django **5.2.19 LTS**、MySQL Community **8.4.13 LTS（InnoDB）**、mysqlclient **2.2.8**。BMAD 继续使用项目已有的 **6.12.4**。三人的开发检查和连续集成使用同一版本。 |
 | 共用名单 | 一个活动、一份人员记录。报名、候补接受、现场签到与 Excel 共同引用活动内的参与者 ID。席位的正式占用和候补留位采用同一容量口径。 |
-| 公共表负责人 | 建议由候补邀请负责人先整合公共模型和初始 Django migration。活动报名负责人复核报名字段和队列顺序，现场与导出负责人复核名单读取、空位交接和现场记录。M2 通过后先合入一次公共迁移，三个模块再并行接入。 |
+| 公共表负责人 | 由候补邀请负责人牵头整合公共模型与初始 Django 迁移。活动报名负责人复核报名字段和队列顺序，现场与导出负责人复核名单读取、空位交接和现场记录。M2 通过后先合入一次公共迁移，三个模块再并行接入。 |
 
 Python、Django 和驱动已核对发布与兼容性。早期本地技术验证用的是 Python 3.10.11 和 SQLite。评审版本组合的安装及 MySQL 行锁测试安排在正式底座验证。见 [Python 发行说明](https://www.python.org/downloads/release/python-31410/)、[Django 版本支持](https://docs.djangoproject.com/en/5.2/faq/install/)、[Django 维护版本](https://www.djangoproject.com/download/)、[MySQL 发行说明](https://dev.mysql.com/doc/relnotes/mysql/8.4/en/news-8-4-13.html)和 [mysqlclient 发行文件](https://pypi.org/project/mysqlclient/2.2.8/#files)。
 

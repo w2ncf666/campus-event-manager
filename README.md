@@ -20,6 +20,16 @@
 
 文档保留模拟评审结果，并记录 11 月 23 日确认的候补规则、三人分工和验收条件。系统实现后按 PRD 验证。
 
+## 架构与冲刺评审
+
+- [架构与共用名单](_bmad-output/planning-artifacts/architecture.md)
+- [史诗与可验收故事](_bmad-output/planning-artifacts/epics.md)
+- [项目规约](_bmad-output/planning-artifacts/project-context.md)
+- [冲刺状态](_bmad-output/implementation-artifacts/sprint-status.yaml)
+- [课程人机决策日志](decision-log.md)
+
+课程 M1、M2 通过后进入正式开发。按 [PR #3 的交接用例](https://github.com/w2ncf666/campus-event-manager/pull/3)走查候补确认、到期与现场补位。
+
 ## 开始协作
 
 1. 接受仓库邀请，然后按[小组项目上手指南](docs/setup-guide.md)克隆仓库并检查本机环境。
