@@ -1,7 +1,7 @@
 ---
 story: "3.4"
 key: 3-4-counts-and-excel-export
-status: draft
+status: review
 ---
 
 # 故事 3.4 出席汇总与 Excel 导出

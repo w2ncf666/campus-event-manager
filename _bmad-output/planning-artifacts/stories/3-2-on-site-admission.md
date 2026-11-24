@@ -1,7 +1,7 @@
 ---
 story: "3.2"
 key: 3-2-on-site-admission
-status: draft
+status: review
 ---
 
 # 故事 3.2 现场先候补再临时补位

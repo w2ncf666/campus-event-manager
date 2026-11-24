@@ -1,7 +1,7 @@
 ---
 story: "3.3"
 key: 3-3-release-and-absence
-status: draft
+status: review
 ---
 
 # 故事 3.3 人工释位与缺席记录

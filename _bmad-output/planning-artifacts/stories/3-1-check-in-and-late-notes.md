@@ -1,7 +1,7 @@
 ---
 story: "3.1"
 key: 3-1-check-in-and-late-notes
-status: draft
+status: review
 ---
 
 # 故事 3.1 共享名单签到与晚到留言
