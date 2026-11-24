@@ -20,7 +20,7 @@
 
 文档保留模拟评审结果，并记录 11 月 23 日确认的候补规则、三人分工和验收条件。系统实现后按 PRD 验证。
 
-## 架构与冲刺评审
+## 开发与课程提交
 
 - [架构与共用名单](_bmad-output/planning-artifacts/architecture.md)
 - [史诗与可验收故事](_bmad-output/planning-artifacts/epics.md)
@@ -28,12 +28,12 @@
 - [冲刺状态](_bmad-output/implementation-artifacts/sprint-status.yaml)
 - [课程人机决策日志](decision-log.md)
 
-课程 M1、M2 通过后进入正式开发。按 [PR #3 的交接用例](https://github.com/w2ncf666/campus-event-manager/pull/3)走查候补确认、到期与现场补位。
+课程 M1（PRD 评审）和 M2（架构答辩）均已通过，现已进入开发。据组员转述，老师确认本次按现有需求继续实施，实验 B 免做，截止前提交本仓库的 GitHub 链接。按 [PR #3 的交接用例](https://github.com/w2ncf666/campus-event-manager/pull/3)走查候补确认、到期与现场补位。
 
 ## 开始协作
 
 1. 接受仓库邀请，然后按[小组项目上手指南](docs/setup-guide.md)克隆仓库并检查本机环境。
 2. 按 [BMAD 安装说明](docs/bmad-guide.md)安装 BMAD 6.12.4，记录实际结果到[三人环境登记表](docs/team-environment.md)。
-3. 以 PRD v0.2 为基线设计架构和拆分故事。
+3. 按 PRD v0.2、共用数据架构和故事顺序实施，先核对公共迁移再并行接入。
 
 [仓库与环境准备进度](docs/repository-status.md) · [协作约定](CONTRIBUTING.md) · [初步范围](docs/initial-scope.md) · [决策记录](docs/decision-log.md)
