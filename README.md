@@ -23,6 +23,7 @@
 ## 开发与课程提交
 
 - [架构与共用名单](_bmad-output/planning-artifacts/architecture.md)
+- [后端迁移、测试与接入](backend/README.md)
 - [史诗与可验收故事](_bmad-output/planning-artifacts/epics.md)
 - [项目规约](_bmad-output/planning-artifacts/project-context.md)
 - [冲刺状态](_bmad-output/implementation-artifacts/sprint-status.yaml)

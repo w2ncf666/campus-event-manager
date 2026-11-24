@@ -23,6 +23,7 @@ coverage/
 .pytest_cache/
 .venv/
 venv/
+/backend/db.sqlite3*
 
 # Per-machine environment report (do not share machine-specific output)
 docs/environment-report.local.md

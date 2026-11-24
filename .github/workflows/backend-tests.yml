@@ -1,0 +1,76 @@
+name: Backend tests
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  mysql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.4.13
+        env:
+          MYSQL_DATABASE: campus_events
+          # Disposable database in this runner. Django creates and drops its test schema.
+          MYSQL_ROOT_PASSWORD: local-ci-only
+          MYSQL_ROOT_HOST: "%"
+        ports:
+          - 3306/tcp
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval 5s
+          --health-timeout 4s
+          --health-retries 24
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14.10"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends default-libmysqlclient-dev pkg-config
+          python -m pip install -r requirements.txt
+      - name: Check and test on MySQL
+        env:
+          DATABASE_ENGINE: mysql
+          DATABASE_NAME: campus_events
+          DATABASE_USER: root
+          DATABASE_PASSWORD: local-ci-only
+          DATABASE_HOST: 127.0.0.1
+          DATABASE_PORT: ${{ job.services.mysql.ports[3306] }}
+        run: |
+          python manage.py shell <<'PY'
+          from django.db import connection
+
+          with connection.cursor() as cursor:
+              cursor.execute("SELECT VERSION(), @@default_storage_engine")
+              version, engine = cursor.fetchone()
+
+          print(f"MySQL {version}, {engine}")
+          assert version.split("-")[0] == "8.4.13" and engine == "InnoDB"
+          PY
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+          python manage.py migrate --noinput
+          python manage.py migrate --check
+          python manage.py test --noinput
