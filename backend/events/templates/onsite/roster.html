@@ -1,0 +1,98 @@
+{% extends "onsite/base.html" %}
+{% block title %}{{ activity.title }} · 签到{% endblock %}
+{% block content %}
+<h1>{{ activity.title }} · 签到</h1>
+<p class="muted">{{ activity.starts_at|date:'m月d日 H:i' }}–{{ activity.ends_at|date:'H:i' }}{% if activity.location %} · {{ activity.location }}{% endif %}</p>
+<section class="panel" aria-labelledby="roster-heading">
+    <div class="row spread">
+        <h2 id="roster-heading">当前席位</h2>
+        <a href="{% url 'onsite:roster' activity.pk %}">刷新名单</a>
+    </div>
+    <p class="muted">已占 {{ rows|length }}/{{ activity.capacity }} 席 · 当前空余 {{ vacancies }} 席</p>
+    {% for row in rows %}
+        <div class="entry">
+            <div class="row spread">
+                <span><strong>{{ row.participant.name }}</strong> <span class="muted">{{ row.participant.masked_student_number }} · {{ row.seat.number }} 号席</span></span>
+                {% if row.attendance %}
+                    <span class="status">已签到 · {{ row.attendance.checked_in_at|date:'H:i' }}</span>
+                {% elif row.can_sign_in %}
+                    <form method="post" action="{% url 'onsite:sign_in' activity.pk row.participant.pk %}">
+                        {% csrf_token %}<button type="submit" aria-label="为 {{ row.participant.name }} 签到">签到</button>
+                    </form>
+                {% else %}
+                    <span class="muted">未签到</span>
+                {% endif %}
+            </div>
+            {% if row.protected %}<p class="muted">已确认晚到，保留至 {{ activity.absence_at|date:'H:i' }}</p>{% endif %}
+            {% if row.can_release %}<span class="status warning">超时未到，可释位</span>{% endif %}
+            {% if row.can_note or row.can_release %}
+                <details>
+                    <summary>晚到与释位</summary>
+                    {% if row.can_note %}
+                        <form method="post" action="{% url 'onsite:late_note' activity.pk row.participant.pk %}" class="row">
+                            {% csrf_token %}
+                            <label>晚到说明 <input name="reason" maxlength="240" required></label>
+                            <button class="secondary" type="submit">记录留言</button>
+                        </form>
+                    {% endif %}
+                    {% if row.can_release %}
+                        <form method="post" action="{% url 'onsite:release' activity.pk row.participant.pk %}" class="row">
+                            {% csrf_token %}
+                            <label>释位理由 <input name="reason" maxlength="240" required></label>
+                            <button class="warning" type="submit">释放席位</button>
+                        </form>
+                    {% endif %}
+                </details>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>当前没有已占用的席位。</p>
+    {% endfor %}
+</section>
+<section class="panel" aria-labelledby="arrivals-heading">
+    <h2 id="arrivals-heading">现场补位</h2>
+    {% if is_open %}
+        <form method="post" action="{% url 'onsite:arrival' activity.pk %}" class="row">
+            {% csrf_token %}
+            <input type="hidden" name="request_id" value="{{ arrival_request_id }}">
+            <label>核验学号 <input name="student_number" maxlength="32" required autocomplete="off"></label>
+            <label>姓名 <input name="name" maxlength="100" required autocomplete="off"></label>
+            <button type="submit">登记在场</button>
+        </form>
+    {% else %}
+        <p class="muted">现场补位仅在活动进行期间开放。</p>
+    {% endif %}
+    {% for participant, mode, leave_request_id in queue %}
+        <div class="entry row spread">
+            <span><strong>{{ participant.name }}</strong> <span class="muted">{{ participant.masked_student_number }} · {{ mode.label }}</span></span>
+            {% if is_open %}
+                <div class="row">
+                    <form method="post" action="{% url 'onsite:leave' activity.pk participant.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_id" value="{{ leave_request_id }}">
+                        <button class="secondary" type="submit">登记离场</button>
+                    </form>
+                    {% if forloop.first and vacancies %}
+                        <form method="post" action="{% url 'onsite:admit' activity.pk participant.pk %}">
+                            {% csrf_token %}<button type="submit">补位并签到</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p class="muted">当前没有等待补位的人员。</p>
+    {% endfor %}
+</section>
+{% if releases %}
+    <section class="panel" aria-labelledby="releases-heading">
+        <h2 id="releases-heading">释位记录</h2>
+        {% for event in releases %}
+            <div class="entry">
+                <strong>{{ event.participant.name }}</strong> <span class="muted">{{ event.participant.masked_student_number }} · {{ event.occurred_at|date:'H:i' }}</span>
+                <p class="muted">{{ event.reason }}</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endif %}
+{% endblock %}

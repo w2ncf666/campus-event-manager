@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}活动现场{% endblock %}</title>
+    <style>
+        :root { color-scheme: light; font: 16px/1.55 system-ui, sans-serif; color: #17242a; background: #f3f7f6; }
+        * { box-sizing: border-box; }
+        body { margin: 0; }
+        header { border-bottom: 1px solid #d9e4e1; background: #fff; }
+        nav, main { width: min(64rem, 100% - 2rem); margin: auto; }
+        nav { min-height: 3.5rem; display: flex; gap: 1rem; justify-content: space-between; align-items: center; }
+        nav > a { font-weight: 700; }
+        main { padding: 1.5rem 0 3rem; }
+        h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.2; margin: 0 0 .4rem; }
+        h2 { font-size: 1.15rem; margin: 0 0 .65rem; }
+        p { margin: 0 0 .7rem; }
+        a { color: #135b4e; }
+        .muted { color: #4a5e60; }
+        .panel { background: #fff; border: 1px solid #d9e4e1; border-radius: .65rem; margin: 1rem 0; padding: 1rem; }
+        .row { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; }
+        .spread { justify-content: space-between; }
+        .entry { padding: .65rem 0; border-top: 1px solid #e2ebe8; }
+        .entry:first-child { border-top: 0; }
+        .status { color: #135b4e; background: #e8f3ee; padding: .16rem .4rem; border-radius: .3rem; font-size: .85rem; }
+        .status.warning { color: #883c1c; background: #fbefe9; }
+        button, input, .button { font: inherit; }
+        button, .button { min-height: 2.35rem; padding: .35rem .75rem; border: 1px solid #216752; border-radius: .36rem; cursor: pointer; }
+        button, .button { color: #fff; background: #216752; text-decoration: none; display: inline-block; }
+        button.secondary { color: #215648; background: #fff; border-color: #a8c1b9; }
+        button.warning { color: #883c1c; background: #fff; border-color: #d7ac99; }
+        input { border: 1px solid #adbfbb; border-radius: .36rem; padding: .38rem .55rem; min-height: 2.35rem; max-width: 100%; }
+        label { display: block; font-size: .87rem; font-weight: 600; }
+        details { margin-top: .5rem; }
+        summary { cursor: pointer; color: #135b4e; }
+        details form { margin: .5rem 0; }
+        table { border-collapse: collapse; width: 100%; text-align: left; font-size: .9rem; }
+        td, th { border-bottom: 1px solid #d9e4e1; padding: .5rem; vertical-align: top; }
+        .table-wrap { overflow-x: auto; }
+        .notice { padding: .6rem .85rem; margin: .45rem 0; border-radius: .36rem; background: #e2f2e9; }
+        .notice.error, .errorlist { color: #8e391e; background: #fbefe9; }
+        .login { max-width: 24rem; }
+        .login input { width: 100%; }
+        dl { display: flex; flex-wrap: wrap; gap: 1rem 2rem; }
+        dd { font-size: 1.5rem; font-weight: 700; margin: 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{% url 'onsite:home' %}">活动现场</a>
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'onsite:logout' %}">
+                    {% csrf_token %}<button type="submit" class="secondary">退出登录</button>
+                </form>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+        {% for message in messages %}<p class="notice {{ message.tags }}" role="status">{{ message }}</p>{% endfor %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

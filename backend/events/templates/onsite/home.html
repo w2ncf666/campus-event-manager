@@ -1,0 +1,19 @@
+{% extends "onsite/base.html" %}
+{% block title %}我的活动{% endblock %}
+{% block content %}
+<h1>我的活动</h1>
+<div class="panel">
+    {% for assignment in assignments %}
+        <div class="entry row spread">
+            <div><strong>{{ assignment.activity.title }}</strong><br><span class="muted">{{ assignment.activity.starts_at|date:'m月d日 H:i' }} {{ assignment.activity.location }}</span></div>
+            {% if assignment.role == 'check_in' %}
+                <a class="button" href="{% url 'onsite:roster' assignment.activity_id %}">打开签到</a>
+            {% else %}
+                <a class="button" href="{% url 'onsite:report' assignment.activity_id %}">查看出席汇总</a>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>当前账号没有签到或财务岗位的活动。</p>
+    {% endfor %}
+</div>
+{% endblock %}

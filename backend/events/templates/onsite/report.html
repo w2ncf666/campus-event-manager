@@ -1,0 +1,35 @@
+{% extends "onsite/base.html" %}
+{% block title %}出席汇总{% endblock %}
+{% block content %}
+{% if unavailable %}
+    <h1>出席汇总</h1>
+    <p class="notice">{{ unavailable }}</p>
+{% else %}
+    <div class="row spread">
+        <h1>{{ report.activity.title }} · 出席汇总</h1>
+        <a class="button" href="{% url 'onsite:export' report.activity.pk %}">下载 Excel</a>
+    </div>
+    <dl class="panel">
+        <div><dt>有效报名</dt><dd>{{ report.registered_count }}</dd></div>
+        <div><dt>最终出席</dt><dd>{{ report.attended_count }}</dd></div>
+        <div><dt>最终缺席</dt><dd>{{ report.absent_count }}</dd></div>
+    </dl>
+    <div class="panel table-wrap">
+        <table>
+            <thead><tr><th>姓名</th><th>学号</th><th>原报名类别</th><th>入场方式</th><th>签到</th><th>释位</th><th>阶段缺席</th><th>最终结果</th></tr></thead>
+            <tbody>
+            {% for row in report.rows %}
+                <tr>
+                    <td>{{ row.name }}</td><td>{{ row.student_number }}</td><td>{{ row.initial_category }}</td>
+                    <td>{{ row.admission_mode }}</td><td>{{ row.checked_in_at|date:'H:i'|default:'—' }}</td>
+                    <td>{% if row.released_at %}{{ row.released_at|date:'H:i' }} · {{ row.release_reason }}{% else %}—{% endif %}</td>
+                    <td>{{ row.stage_absent|yesno:'是,否' }}</td><td>{{ row.final_status }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="8">该活动没有出席记录。</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

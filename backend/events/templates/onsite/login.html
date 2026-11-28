@@ -1,0 +1,13 @@
+{% extends "onsite/base.html" %}
+{% block title %}工作人员登录{% endblock %}
+{% block content %}
+<h1>工作人员登录</h1>
+<form method="post" class="panel login">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <p><label for="id_username">账号</label>{{ form.username }}</p>
+    <p><label for="id_password">密码</label>{{ form.password }}</p>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit">登录</button>
+</form>
+{% endblock %}
