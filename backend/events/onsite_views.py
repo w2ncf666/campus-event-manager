@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -14,7 +16,11 @@ from .models import Activity, ActivityStaff, Registration, RosterEvent
 from .seats import available_seats
 
 
-class ArrivalForm(forms.Form):
+class PresenceRequestForm(forms.Form):
+    request_id = forms.UUIDField()
+
+
+class ArrivalForm(PresenceRequestForm):
     student_number = forms.CharField(max_length=32)
     name = forms.CharField(max_length=100)
 
@@ -66,7 +72,8 @@ def roster(request, activity_id):
     return render(request, "onsite/roster.html", {
         "activity": activity,
         "rows": rows,
-        "queue": queue,
+        "queue": [(participant, mode, uuid4()) for participant, mode in queue],
+        "arrival_request_id": uuid4(),
         "is_open": is_open,
         "vacancies": available_seats(activity_id, at=now).count(),
         "releases": RosterEvent.objects.filter(
@@ -120,15 +127,21 @@ def release(request, activity_id, participant_id):
 def arrival(request, activity_id):
     form = ArrivalForm(request.POST)
     if not form.is_valid():
-        messages.error(request, "请填写核验过的学号和姓名。")
+        messages.error(request, "登记信息无效，请刷新名单并输入核验过的学号和姓名。")
         return redirect("onsite:roster", activity_id=activity_id)
-    return _update_roster(request, activity_id, record_arrival, "已登记在场。", **form.cleaned_data)
+    return _update_roster(request, activity_id, record_arrival, "到场请求已处理。", **form.cleaned_data)
 
 
 @login_required(login_url="onsite:login")
 @require_POST
 def leave(request, activity_id, participant_id):
-    return _update_roster(request, activity_id, remove_arrival, "已登记离场。", participant_id)
+    form = PresenceRequestForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "提交编号无效，请刷新名单后重试。")
+        return redirect("onsite:roster", activity_id=activity_id)
+    return _update_roster(
+        request, activity_id, remove_arrival, "离场请求已处理。", participant_id, **form.cleaned_data
+    )
 
 
 @login_required(login_url="onsite:login")

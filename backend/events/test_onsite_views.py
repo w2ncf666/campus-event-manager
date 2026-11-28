@@ -1,3 +1,4 @@
+import re
 from io import BytesIO
 from unittest.mock import patch
 from uuid import uuid4
@@ -45,7 +46,9 @@ class OnsiteViewTests(InvitationFixture, TestCase):
         return Participant.objects.get(activity=self.activity, student_number="0003")
 
     def post_arrival(self, person):
-        response = self.client.post(self.url("arrival"), {"student_number": person.student_number, "name": person.name})
+        response = self.client.post(self.url("arrival"), {
+            "student_number": person.student_number, "name": person.name, "request_id": uuid4(),
+        })
         self.assertRedirects(response, self.url("roster"), fetch_redirect_response=False)
 
     def test_ac07_through_staff_views_and_released_person_export(self):
@@ -109,6 +112,48 @@ class OnsiteViewTests(InvitationFixture, TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual((rows[0][3], rows[0][6], rows[0][7], rows[0][9]), ("现场临时", "未到且无留言", "是", "出席"))
         self.assertEqual(Invitation.objects.get(pk=second.invitation_id).status, Invitation.Status.EXPIRED)
+
+    def test_checkin_page_masks_student_numbers_in_all_roster_sections(self):
+        numbers = ("101234560001", "101234560002", "101234560003")
+        people = [
+            Participant.objects.create(activity=self.activity, student_number=number, name=name)
+            for number, name in zip(numbers, ("正式成员甲", "候补成员乙", "已释位成员丙"))
+        ]
+        seated, waiting, released = people
+        self.first_seat.occupant = seated
+        self.first_seat.save(update_fields=("occupant",))
+        for person, kind in ((waiting, RosterEvent.Kind.ARRIVED), (released, RosterEvent.Kind.RELEASED)):
+            RosterEvent.objects.create(
+                participant=person, kind=kind, occurred_at=event_time(14, 30),
+                recorded_by=self.checker,
+            )
+        self.client.force_login(self.checker)
+        with patch("django.utils.timezone.now", return_value=event_time(14, 31)):
+            response = self.client.get(self.url("roster"))
+        for person in people:
+            self.assertContains(response, person.name)
+            self.assertContains(response, f"••••{person.student_number[-4:]}")
+            self.assertNotContains(response, person.student_number)
+
+    def test_replayed_browser_arrival_remains_effective_only_once(self):
+        self.client.force_login(self.checker)
+        with patch("django.utils.timezone.now", return_value=event_time(14, 10)):
+            def form_ids():
+                page = self.client.get(self.url("roster"))
+                return re.findall(r'name="request_id" value="([a-f0-9-]+)"', page.content.decode())
+
+            arrival_id, = form_ids()
+            data = {"name": "现场人员甲", "student_number": "101234560004", "request_id": arrival_id}
+            self.client.post(self.url("arrival"), data)
+            new_arrival_id, leave_id = form_ids()
+            person = Participant.objects.get(student_number=data["student_number"], activity=self.activity)
+            self.client.post(self.url("leave", person.pk), {"request_id": leave_id})
+            self.client.post(self.url("arrival"), data)
+            self.assertNotContains(self.client.get(self.url("roster")), person.name)
+
+            self.client.post(self.url("arrival"), {**data, "request_id": new_arrival_id})
+            self.client.post(self.url("leave", person.pk), {"request_id": leave_id})
+            self.assertContains(self.client.get(self.url("roster")), person.name)
 
     def test_login_csrf_and_roles_are_enforced_at_web_entry_points(self):
         client = Client(enforce_csrf_checks=True)

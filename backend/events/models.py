@@ -62,6 +62,11 @@ class Participant(models.Model):
         "Registration", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
 
+    @property
+    def masked_student_number(self):
+        visible = min(4, len(self.student_number) // 2)
+        return "••••" + self.student_number[len(self.student_number) - visible:]
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -224,4 +229,20 @@ class RosterEvent(models.Model):
             models.Index(
                 fields=("participant", "kind", "occurred_at"), name="roster_event_history_idx"
             ),
+        ]
+
+
+class PresenceRequest(models.Model):
+    class Kind(models.TextChoices):
+        ARRIVE = "arrived", "登记在场"
+        LEAVE = "left", "登记离场"
+
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+    request_id = models.UUIDField()
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
+    kind = models.CharField(max_length=8, choices=Kind.choices)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("activity", "request_id"), name="unique_presence_request"),
         ]

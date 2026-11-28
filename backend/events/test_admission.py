@@ -66,12 +66,18 @@ class OnsiteAdmissionFixture:
         person.save(update_fields=("current_registration",))
         return person
 
-    def _arrive(self, student_number, name=None):
+    def _arrive(self, student_number, name=None, *, request_id=None):
         return record_arrival(
             self.activity.pk,
             staff_id=self.staff.pk,
             student_number=student_number,
             name=name or f"参与者 {student_number}",
+            request_id=request_id or uuid4(),
+        )
+
+    def _leave(self, person, *, request_id=None):
+        return remove_arrival(
+            self.activity.pk, person.pk, staff_id=self.staff.pk, request_id=request_id or uuid4(),
         )
 
     def _admit(self, person):
@@ -129,8 +135,8 @@ class OnsiteAdmissionTests(OnsiteAdmissionFixture, TestCase):
             )
             with self.assertRaises(OnsiteError):
                 self._admit(late)
-            remove_arrival(self.activity.pk, early.pk, staff_id=self.staff.pk)
-            remove_arrival(self.activity.pk, early.pk, staff_id=self.staff.pk)
+            self._leave(early)
+            self._leave(early)
             self.assertEqual(
                 list(early.roster_events.order_by("pk").values_list("kind", flat=True)),
                 [RosterEvent.Kind.ARRIVED, RosterEvent.Kind.LEFT],
@@ -152,6 +158,36 @@ class OnsiteAdmissionTests(OnsiteAdmissionFixture, TestCase):
         self.assertEqual(
             Seat.objects.filter(activity=self.activity, occupant__isnull=False).count(), 4
         )
+
+    def test_old_presence_requests_do_not_overwrite_newer_state(self):
+        first_arrival, repeated_arrival, departure = uuid4(), uuid4(), uuid4()
+        with patch("events.admission.timezone.now", return_value=event_time(14, 10)):
+            person = self._arrive("0031", request_id=first_arrival)
+            # A separate submission while already present must also be safe to replay.
+            self._arrive("0031", request_id=repeated_arrival)
+            self._leave(person, request_id=departure)
+            self._arrive("0031", request_id=first_arrival)
+            self._arrive("0031", request_id=repeated_arrival)
+            self.assertEqual(self._queue(), [])
+
+            self._arrive("0031")
+            self._leave(person, request_id=departure)
+            self.assertEqual([entry.pk for entry, _ in self._queue()], [person.pk])
+        self.assertEqual(
+            list(person.roster_events.order_by("pk").values_list("kind", flat=True)),
+            [RosterEvent.Kind.ARRIVED, RosterEvent.Kind.LEFT, RosterEvent.Kind.ARRIVED],
+        )
+
+    def test_presence_request_id_cannot_be_reused_for_a_different_action_or_person(self):
+        request_id = uuid4()
+        with patch("events.admission.timezone.now", return_value=event_time(14, 10)):
+            person = self._arrive("0031", request_id=request_id)
+            with self.assertRaises(OnsiteError):
+                self._leave(person, request_id=request_id)
+            with self.assertRaises(OnsiteError):
+                self._arrive("0032", request_id=request_id)
+            self.assertEqual([entry.pk for entry, _ in self._queue()], [person.pk])
+        self.assertFalse(Participant.objects.filter(student_number="0032").exists())
 
     def test_released_formal_participant_reuses_identity_and_preserves_history(self):
         person = self._registration("0004", 4, status=Registration.Status.RELEASED)
@@ -205,7 +241,8 @@ class OnsiteAdmissionTests(OnsiteAdmissionFixture, TestCase):
                 get_arrival_queue(self.activity.pk, staff_id=self.organizer.pk)
             with self.assertRaises(PermissionDenied):
                 record_arrival(
-                    self.activity.pk, staff_id=self.organizer.pk, student_number="0040", name="无权限"
+                    self.activity.pk, staff_id=self.organizer.pk, student_number="0040",
+                    name="无权限", request_id=uuid4(),
                 )
             for number in range(10, 15):
                 self._admit(self._arrive(f"{number:04}"))

@@ -12,7 +12,7 @@
     {% for row in rows %}
         <div class="entry">
             <div class="row spread">
-                <span><strong>{{ row.participant.name }}</strong> <span class="muted">{{ row.participant.student_number }} · {{ row.seat.number }} 号席</span></span>
+                <span><strong>{{ row.participant.name }}</strong> <span class="muted">{{ row.participant.masked_student_number }} · {{ row.seat.number }} 号席</span></span>
                 {% if row.attendance %}
                     <span class="status">已签到 · {{ row.attendance.checked_in_at|date:'H:i' }}</span>
                 {% elif row.can_sign_in %}
@@ -54,6 +54,7 @@
     {% if is_open %}
         <form method="post" action="{% url 'onsite:arrival' activity.pk %}" class="row">
             {% csrf_token %}
+            <input type="hidden" name="request_id" value="{{ arrival_request_id }}">
             <label>核验学号 <input name="student_number" maxlength="32" required autocomplete="off"></label>
             <label>姓名 <input name="name" maxlength="100" required autocomplete="off"></label>
             <button type="submit">登记在场</button>
@@ -61,13 +62,15 @@
     {% else %}
         <p class="muted">现场补位仅在活动进行期间开放。</p>
     {% endif %}
-    {% for participant, mode in queue %}
+    {% for participant, mode, leave_request_id in queue %}
         <div class="entry row spread">
-            <span><strong>{{ participant.name }}</strong> <span class="muted">{{ participant.student_number }} · {{ mode.label }}</span></span>
+            <span><strong>{{ participant.name }}</strong> <span class="muted">{{ participant.masked_student_number }} · {{ mode.label }}</span></span>
             {% if is_open %}
                 <div class="row">
                     <form method="post" action="{% url 'onsite:leave' activity.pk participant.pk %}">
-                        {% csrf_token %}<button class="secondary" type="submit">登记离场</button>
+                        {% csrf_token %}
+                        <input type="hidden" name="request_id" value="{{ leave_request_id }}">
+                        <button class="secondary" type="submit">登记离场</button>
                     </form>
                     {% if forloop.first and vacancies %}
                         <form method="post" action="{% url 'onsite:admit' activity.pk participant.pk %}">
@@ -86,7 +89,7 @@
         <h2 id="releases-heading">释位记录</h2>
         {% for event in releases %}
             <div class="entry">
-                <strong>{{ event.participant.name }}</strong> <span class="muted">{{ event.participant.student_number }} · {{ event.occurred_at|date:'H:i' }}</span>
+                <strong>{{ event.participant.name }}</strong> <span class="muted">{{ event.participant.masked_student_number }} · {{ event.occurred_at|date:'H:i' }}</span>
                 <p class="muted">{{ event.reason }}</p>
             </div>
         {% endfor %}

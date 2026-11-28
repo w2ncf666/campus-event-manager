@@ -9,7 +9,15 @@ from .checkin import (
     require_onsite_open,
 )
 from .invitations import expire_due_locked
-from .models import Activity, ActivityStaff, Attendance, Participant, Registration, RosterEvent
+from .models import (
+    Activity,
+    ActivityStaff,
+    Attendance,
+    Participant,
+    PresenceRequest,
+    Registration,
+    RosterEvent,
+)
 from .seats import available_seats, lock_activity, occupy_seat, seat_assignments
 
 
@@ -75,8 +83,17 @@ def _set_presence(participant, kind, *, staff_id, at):
     )
 
 
+def _previous_presence_request(activity, request_id, kind):
+    previous = PresenceRequest.objects.filter(
+        activity=activity, request_id=request_id,
+    ).select_related("participant").first()
+    if previous is not None and previous.kind != kind:
+        raise OnsiteError("提交编号已用于其他操作。请刷新名单后重试。")
+    return previous
+
+
 @transaction.atomic
-def record_arrival(activity_id, *, staff_id, student_number, name):
+def record_arrival(activity_id, *, staff_id, student_number, name, request_id):
     """Record presence after the check-in operator verifies the name and student number."""
     activity = lock_activity(activity_id)
     now = timezone.now()
@@ -86,31 +103,50 @@ def record_arrival(activity_id, *, staff_id, student_number, name):
     name = name.strip()
     if not student_number or len(student_number) > 32 or not name or len(name) > 100:
         raise OnsiteError("请输入有效的姓名和学号。")
+    kind = PresenceRequest.Kind.ARRIVE
+    previous = _previous_presence_request(activity, request_id, kind)
+    if previous is not None:
+        participant = previous.participant
+        if (participant.student_number, participant.name) != (student_number, name):
+            raise OnsiteError("提交编号已用于其他人员。请刷新名单后重试。")
+        return participant
+
     participant, _ = Participant.objects.get_or_create(
         activity=activity, student_number=student_number, defaults={"name": name}
     )
     if participant.student_number != student_number or participant.name != name:
         raise OnsiteError("姓名或学号与本场记录不一致，请重新核验。")
-    if Attendance.objects.filter(participant=participant).exists():
-        return participant
-    if seat_assignments(activity_id).filter(occupant=participant).exists():
-        raise OnsiteError("此人已有正式席位，请直接办理签到。")
-    _set_presence(participant, RosterEvent.Kind.ARRIVED, staff_id=staff_id, at=now)
+    if not Attendance.objects.filter(participant=participant).exists():
+        if seat_assignments(activity_id).filter(occupant=participant).exists():
+            raise OnsiteError("此人已有正式席位，请直接办理签到。")
+        _set_presence(participant, RosterEvent.Kind.ARRIVED, staff_id=staff_id, at=now)
+    PresenceRequest.objects.create(
+        activity=activity, request_id=request_id, participant=participant, kind=kind,
+    )
     return participant
 
 
 @transaction.atomic
-def remove_arrival(activity_id, participant_id, *, staff_id):
+def remove_arrival(activity_id, participant_id, *, staff_id, request_id):
     """Withdraw an on-site queue entry without changing past attendance."""
     activity = lock_activity(activity_id)
     now = timezone.now()
     require_activity_role(activity, staff_id, ActivityStaff.Role.CHECK_IN)
     require_onsite_open(activity, now)
+    kind = PresenceRequest.Kind.LEAVE
+    previous = _previous_presence_request(activity, request_id, kind)
+    if previous is not None:
+        if previous.participant_id != participant_id:
+            raise OnsiteError("提交编号已用于其他人员。请刷新名单后重试。")
+        return previous.participant
     participant = Participant.objects.filter(pk=participant_id, activity=activity).first()
     if participant is None:
         raise OnsiteError("本场活动没有该到场记录。")
     if not Attendance.objects.filter(participant=participant).exists():
         _set_presence(participant, RosterEvent.Kind.LEFT, staff_id=staff_id, at=now)
+    PresenceRequest.objects.create(
+        activity=activity, request_id=request_id, participant=participant, kind=kind,
+    )
     return participant
 
 
